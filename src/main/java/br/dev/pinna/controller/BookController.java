@@ -2,6 +2,7 @@ package br.dev.pinna.controller;
 
 import br.dev.pinna.environment.InstanceInformationService;
 import br.dev.pinna.model.Book;
+import br.dev.pinna.repository.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,10 +19,18 @@ public class BookController {
     @Autowired
     private InstanceInformationService informationService;
 
+    @Autowired
+    private BookRepository repository;
+
     @GetMapping(value = "/{id}/{currency}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Book findBook(@PathVariable("id") Long id, @PathVariable("currency") String currency) {
         String port = informationService.retrieveServerPort();
 
-        return new Book(1L, "Nigel Poulton", "Docker Deep Dive", new Date(), 15.8, "BRL", port);
+        var book = repository.findById(id).orElseThrow();
+
+        book.setEnvironment(port);
+        book.setCurrency(currency);
+
+        return book;
     }
 }
